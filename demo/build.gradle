@@ -18,10 +18,46 @@ repositories {
 }
 
 dependencies {
+	// Spring Boot Web Starter (NestJS의 기본 웹 기능과 같음)
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	
+	// Spring Data JPA (NestJS의 TypeORM과 비슷한 ORM)
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	
+	// Spring Security (NestJS의 Passport나 Guards와 비슷한 인증/인가)
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	
+	// WebSocket with STOMP (NestJS의 WebSocket Gateway와 비슷)
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	
+	// MySQL Connector (데이터베이스 드라이버)
+	runtimeOnly 'mysql:mysql-connector-java:8.0.33'
+	
+	// Swagger/OpenAPI (NestJS의 @nestjs/swagger와 같은 API 문서화)
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+	
+	// JWT Support (NestJS의 @nestjs/jwt와 같은 JWT 토큰 처리)
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+	
+	// Validation (NestJS의 class-validator와 비슷)
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	
+	// Development Tools
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	
+	// Test Dependencies
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	// H2 Database for testing (인메모리 DB)
+	testImplementation 'com.h2database:h2'
+	
+	// Lombok (NestJS에는 없지만 Java 개발 시 매우 유용)
+	compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
 tasks.named('test') {

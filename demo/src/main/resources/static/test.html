@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot Demo - API & WebSocket 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        input, textarea, button, select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f8f9fa;
+            margin-bottom: 10px;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Spring Boot + JPA + Security + WebSocket + MySQL Demo</h1>
+    
+    <div class="info">
+        <strong>📖 사용법:</strong><br>
+        1. 먼저 회원가입을 하세요<br>
+        2. 생성된 계정으로 API 테스트를 해보세요<br>
+        3. Swagger UI: <a href="/swagger-ui.html" target="_blank">/swagger-ui.html</a>
+    </div>
+
+    <!-- 회원가입 -->
+    <div class="container">
+        <h2>🔐 회원가입</h2>
+        <input type="text" id="regUsername" placeholder="사용자명">
+        <input type="email" id="regEmail" placeholder="이메일">
+        <input type="password" id="regPassword" placeholder="비밀번호">
+        <select id="regRole">
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+        </select>
+        <button onclick="register()">회원가입</button>
+        <div id="regResponse" class="response"></div>
+    </div>
+
+    <!-- 사용자 조회 -->
+    <div class="container">
+        <h2>📡 사용자 조회 (인증 필요)</h2>
+        <input type="text" id="authUsername" placeholder="인증용 사용자명">
+        <input type="password" id="authPassword" placeholder="인증용 비밀번호">
+        <button onclick="getAllUsers()">모든 사용자 조회</button>
+        <input type="number" id="userId" placeholder="사용자 ID">
+        <button onclick="getUserById()">ID로 사용자 조회</button>
+        <div id="userResponse" class="response"></div>
+    </div>
+
+    <!-- WebSocket 채팅 -->
+    <div class="container">
+        <h2>💬 WebSocket 실시간 채팅</h2>
+        <input type="text" id="chatUsername" placeholder="채팅 사용자명">
+        <button onclick="connect()">채팅 연결</button>
+        <button onclick="disconnect()">연결 해제</button>
+        
+        <div id="chatMessages" class="chat-messages"></div>
+        
+        <input type="text" id="messageContent" placeholder="메시지 입력..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()">메시지 전송</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script>
+        let stompClient = null;
+
+        // 회원가입
+        async function register() {
+            const data = {
+                username: document.getElementById('regUsername').value,
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value,
+                role: document.getElementById('regRole').value
+            };
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.text();
+                document.getElementById('regResponse').textContent = `Status: ${response.status}\n${result}`;
+            } catch (error) {
+                document.getElementById('regResponse').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // 모든 사용자 조회
+        async function getAllUsers() {
+            const username = document.getElementById('authUsername').value;
+            const password = document.getElementById('authPassword').value;
+            const auth = btoa(username + ':' + password);
+
+            try {
+                const response = await fetch('/api/users', {
+                    headers: {
+                        'Authorization': 'Basic ' + auth
+                    }
+                });
+
+                const result = await response.text();
+                document.getElementById('userResponse').textContent = `Status: ${response.status}\n${result}`;
+            } catch (error) {
+                document.getElementById('userResponse').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // ID로 사용자 조회
+        async function getUserById() {
+            const id = document.getElementById('userId').value;
+            const username = document.getElementById('authUsername').value;
+            const password = document.getElementById('authPassword').value;
+            const auth = btoa(username + ':' + password);
+
+            if (!id) return;
+
+            try {
+                const response = await fetch(`/api/users/${id}`, {
+                    headers: {
+                        'Authorization': 'Basic ' + auth
+                    }
+                });
+
+                const result = await response.text();
+                document.getElementById('userResponse').textContent = `Status: ${response.status}\n${result}`;
+            } catch (error) {
+                document.getElementById('userResponse').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // WebSocket 연결
+        function connect() {
+            const username = document.getElementById('chatUsername').value;
+            if (!username) return;
+
+            const socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                
+                stompClient.subscribe('/topic/public', function (message) {
+                    showMessage(JSON.parse(message.body));
+                });
+
+                stompClient.send("/app/chat.addUser", {}, JSON.stringify({
+                    sender: username,
+                    type: 'JOIN'
+                }));
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+        }
+
+        function sendMessage() {
+            const username = document.getElementById('chatUsername').value;
+            const content = document.getElementById('messageContent').value;
+            
+            if (stompClient && username && content) {
+                const message = {
+                    sender: username,
+                    content: content,
+                    type: 'CHAT'
+                };
+
+                stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(message));
+                document.getElementById('messageContent').value = '';
+            }
+        }
+
+        function showMessage(message) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageElement = document.createElement('div');
+            
+            const time = new Date().toLocaleTimeString();
+            messageElement.textContent = `[${time}] ${message.sender}: ${message.content}`;
+            
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html> 
