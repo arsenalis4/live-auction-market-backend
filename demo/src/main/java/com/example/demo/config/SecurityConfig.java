@@ -90,7 +90,7 @@ public class SecurityConfig {
                 .requestMatchers("/ws/**").permitAll() // WebSocket
                 
                 // Swagger UI 접근 허용
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
                 
                 // 정적 리소스 접근 허용
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/*.html").permitAll()

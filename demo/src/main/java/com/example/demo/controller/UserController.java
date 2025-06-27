@@ -187,10 +187,13 @@ public class UserController {
     @GetMapping("/me")
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 정보를 조회합니다")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserResponseDto> getCurrentUser(
-            @Parameter(hidden = true) @RequestHeader("Authorization") String token) {
-        // 실제로는 JWT에서 사용자 정보를 추출해야 하지만, 여기서는 간단히 처리
-        // 현재 인증된 사용자 정보는 SecurityContext에서 가져올 수 있습니다
-        return ResponseEntity.ok().build(); // 실제 구현 필요
+    public ResponseEntity<UserResponseDto> getCurrentUser(java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        return userService.getUserByUsername(principal.getName())
+                .map(user -> ResponseEntity.ok(user))
+                .orElse(ResponseEntity.notFound().build());
     }
 } 
