@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.controller.UserController;
+import io.swagger.v3.oas.annotations.Hidden;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -21,7 +22,8 @@ import java.util.Map;
  * NestJS의 @Catch() ExceptionFilter와 비슷
  * 애플리케이션 전체에서 발생하는 예외를 일관된 방식으로 처리
  */
-@RestControllerAdvice(annotations = {RestController.class}, basePackageClasses = {UserController.class}) // NestJS의 @Catch() 데코레이터와 비슷
+@Hidden
+@RestControllerAdvice() // NestJS의 @Catch() 데코레이터와 비슷
 public class GlobalExceptionHandler {
 
     /**
