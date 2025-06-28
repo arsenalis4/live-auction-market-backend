@@ -17,7 +17,7 @@ public class ViewingReservationDto {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public class PageableDto {
+    public static class PageableDto {
         @Schema(description = "Page number", example = "0")
         private int page;
 
@@ -35,7 +35,7 @@ public class ViewingReservationDto {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public class CreateViewingReservationDto {
+    public static class CreateViewingReservationDto {
         @Schema(description = "User ID", example = "1")
         private Long userId;
 
@@ -54,7 +54,7 @@ public class ViewingReservationDto {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public class UpdateViewingReservationDto {
+    public static class UpdateViewingReservationDto {
         @Schema(description = "Reservation Date", example = "2025-01-01 10:00:00")
         private LocalDateTime reservationDate;
 

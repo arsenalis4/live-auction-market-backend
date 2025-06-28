@@ -37,7 +37,7 @@ public class ViewingReservationController {
 
     @GetMapping
     @Operation(summary = "Get all viewing reservations", description = "Get all viewing reservations")
-    public ResponseEntity<Page<ViewingReservation>> findAll(@RequestBody PageableDto pageableDto) {
+    public ResponseEntity<Page<ViewingReservation>> findAll(PageableDto pageableDto) {
         Pageable pageable = PageRequest.of(pageableDto.getPage(), pageableDto.getSize(), Sort.by(pageableDto.getSort()).descending());
         return ResponseEntity.ok(viewingReservationService.findAll(pageable));
     }
@@ -63,8 +63,8 @@ public class ViewingReservationController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update viewing reservation", description = "Update viewing reservation")
-    public ResponseEntity<ViewingReservation> update(@PathVariable String id, @RequestBody UpdateViewingReservationDto updateViewingReservationDto) {
-        ViewingReservation viewingReservation = updateViewingReservationDto.toEntity(id);
+    public ResponseEntity<ViewingReservation> update(@PathVariable String id, @RequestBody ViewingReservation viewingReservation) {
+        // ViewingReservation viewingReservation = updateViewingReservationDto.toEntity(id);
         return ResponseEntity.ok(viewingReservationService.updateViewingReservation(id, viewingReservation));
     }
     
